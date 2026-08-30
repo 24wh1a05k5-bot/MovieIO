@@ -1,16 +1,114 @@
-# React + Vite
+# 🎬 MOVIO
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**MOVIO** is a movie night app that helps you and your friends pick something to watch together. Create a room, swipe through movies, match on picks, and build a personal collection of everything you've liked — with a smooth, gallery-style browsing experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Features
 
-## React Compiler
+- **Room-based movie nights** — create or join a room with friends using a room code
+- **Swipe to like/pass** — quickly go through movie suggestions
+- **Match detection** — see when everyone in the room likes the same movie
+- **Personal likes collection** — a dashboard of every movie you've liked, with poster grid view
+- **Movie detail view** — full synopsis, rating, and where-to-watch streaming providers (powered by TMDB)
+- **Gallery-style browsing** — swipe, drag, or use arrow keys to move between liked movies, just like flipping through photos on your phone
+- **Keyboard navigation** — left/right arrow keys move between movies on the detail page
+- **Responsive, animated UI** — subtle transitions and a clean dark theme throughout
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend:** React, React Router
+- **Styling:** Custom CSS (dark theme, CSS variables for theming)
+- **Movie data:** [TMDB API](https://www.themoviedb.org/documentation/api) for movie details, overviews, and streaming providers
+- **State/Data:** Backend API for storing rooms, likes, and matches (see `/src/api.js`)
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+  components/
+    Dashboard.jsx      # Grid of all movies the user has liked
+    MovieDetail.jsx     # Full movie detail + swipeable gallery navigation
+    MatchModal.jsx       # Shown when a match happens in a room
+    ...
+  api.js                 # Backend API calls (likes, rooms, users)
+  tmdb.js                # TMDB API integration (details, watch providers)
+  user.js                 # Local user identity helper
+  index.css               # Global styles and theme
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm or yarn
+- A TMDB API key ([get one here](https://www.themoviedb.org/settings/api))
+
+### Installation
+
+```bash
+git clone https://github.com/your-username/movio.git
+cd movio
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```
+VITE_TMDB_API_KEY=your_tmdb_api_key_here
+VITE_API_BASE_URL=your_backend_url_here
+```
+
+### Run locally
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173` (or whichever port your dev server uses).
+
+### Build for production
+
+```bash
+npm run build
+```
+
+---
+
+## 🎮 Usage
+
+1. Start or join a room with friends using a shared room code
+2. Swipe through movie suggestions — like or pass
+3. When everyone in the room likes the same movie, get a match
+4. Head to your **Dashboard** to see every movie you've liked
+5. Click any movie to see full details, streaming availability, and swipe/drag/arrow-key through the rest of your collection
+
+---
+
+## 📌 Roadmap / Ideas
+
+- Group chat or reactions within a room
+- Filters by genre, streaming platform, or release year
+- Shareable match results
+- User profiles and watch history
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 🙌 Acknowledgements
+
+- Movie data and streaming provider info from [TMDB](https://www.themoviedb.org/)
+- Built as a personal project to make movie nights with friends easier
