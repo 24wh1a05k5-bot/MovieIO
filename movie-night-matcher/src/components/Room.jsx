@@ -20,6 +20,7 @@ export default function Room() {
   const [toast, setToast] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showVotes, setShowVotes] = useState(false);
   const [page, setPage] = useState(1);
 
   const dismissedMatches = useRef(new Set());
@@ -55,33 +56,27 @@ export default function Room() {
 
   useEffect(() => {
     function handleKey(e) {
-      if (matchedMovie || showHistory) return;
+      if (matchedMovie || showHistory || showVotes) return;
       if (e.key === "ArrowRight") handleSwipe(true);
       if (e.key === "ArrowLeft") handleSwipe(false);
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [movies, index, matchedMovie, showHistory]);
+  }, [movies, index, matchedMovie, showHistory, showVotes]);
 
   function handleSwipe(liked) {
-  console.log("Swipe clicked:", liked, "current index:", index);
-  const currentMovie = movies[index];
-  console.log("Current movie:", currentMovie);
-  setIndex((i) => i + 1);
-  if (!currentMovie) {
-    console.log("No current movie, stopping here");
-    return;
-  }
+    const currentMovie = movies[index];
+    setIndex((i) => i + 1);
+    if (!currentMovie) return;
 
-  console.log("Emitting swipe event to server...");
-  socket.emit("swipe", {
-    roomCode,
-    userId: uid.current,
-    movie: currentMovie,
-    liked,
-  });
-}
+    socket.emit("swipe", {
+      roomCode,
+      userId: uid.current,
+      movie: currentMovie,
+      liked,
+    });
+  }
 
   function handleCloseMatch() {
     if (matchedMovie) dismissedMatches.current.add(matchedMovie.id);
@@ -109,18 +104,39 @@ export default function Room() {
     .map((id) => movies.find((m) => m.id === id))
     .filter(Boolean);
 
+  // Build a name lookup and a vote tally from everyone's individual likes
+  const nameByUserId = {};
+  (roomData.members || []).forEach((m) => {
+    nameByUserId[m.userId] = m.name && m.name.trim() ? m.name : "Guest";
+  });
+
+  const tally = {};
+  Object.entries(roomData.likes || {}).forEach(([userId, movieIds]) => {
+    (movieIds || []).forEach((movieId) => {
+      if (!tally[movieId]) tally[movieId] = { count: 0, names: [] };
+      tally[movieId].count += 1;
+      tally[movieId].names.push(nameByUserId[userId] || "Guest");
+    });
+  });
+
+  const voteList = Object.entries(tally)
+    .map(([movieId, info]) => ({
+      movie: movies.find((m) => m.id === Number(movieId)),
+      count: info.count,
+      names: info.names,
+    }))
+    .filter((v) => v.movie)
+    .sort((a, b) => b.count - a.count);
+
   return (
     <div className="reel-frame">
       <div className="top-nav">
         <span className="brand" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-          MOVIE<span> IO</span>
+          MOVIE<span> NIGHT</span>
         </span>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="history-btn" onClick={() => navigate("/dashboard")}>
             My Likes
-          </button>
-          <button className="history-btn" onClick={() => setShowHistory(true)}>
-            Matches ({matchedMovies.length})
           </button>
         </div>
       </div>
@@ -138,8 +154,17 @@ export default function Room() {
           </div>
           <div className="live-indicator">
             <span className="live-dot" />
-            {roomData.members.length} watching
+            {roomData.members.map((m) => m.name || "Guest").join(", ")}
           </div>
+        </div>
+
+        <div className="room-tab-row">
+          <button className="tab-btn" onClick={() => setShowVotes(true)}>
+            Votes ({voteList.length})
+          </button>
+          <button className="tab-btn" onClick={() => setShowHistory(true)}>
+            Matches ({matchedMovies.length})
+          </button>
         </div>
 
         <div className="progress-track">
@@ -164,6 +189,33 @@ export default function Room() {
             justwatchLink={justwatchLink}
             onClose={handleCloseMatch}
           />
+        ) : null}
+
+        {showVotes ? (
+          <div className="match-overlay" onClick={() => setShowVotes(false)}>
+            <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>Room Votes</h3>
+              {voteList.length === 0 ? (
+                <p className="empty-sub">No likes yet — start swiping!</p>
+              ) : (
+                <div className="votes-list">
+                  {voteList.map((v) => (
+                    <div key={v.movie.id} className="votes-item">
+                      {v.movie.poster ? <img src={v.movie.poster} alt={v.movie.title} /> : null}
+                      <div className="votes-info">
+                        <p className="votes-title">{v.movie.title}</p>
+                        <p className="votes-names">Liked by: {v.names.join(", ")}</p>
+                      </div>
+                      <span className="votes-count-badge">{v.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button className="close-btn" onClick={() => setShowVotes(false)}>
+                Close
+              </button>
+            </div>
+          </div>
         ) : null}
 
         {showHistory ? (
