@@ -12,6 +12,7 @@ const UserLikes = require("./models/UserLikes");
 const app = express();
 app.use(cors({ origin: "*" })); // or your specific frontend URL once you have it
 app.use(express.json());
+app.get("/health", (req, res) => res.send("ok"));
 app.use("/api/rooms", roomRoutes);
 
 const server = http.createServer(app);
